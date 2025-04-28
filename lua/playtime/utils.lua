@@ -13,4 +13,8 @@ function utils.set_buffer_content(buf_id, content_str)
     vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, { content_str })
 end
 
+function utils.cwd()
+    return vim.fn.getcwd()
+end
+
 return utils

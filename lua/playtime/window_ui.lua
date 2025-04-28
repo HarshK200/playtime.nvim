@@ -55,33 +55,48 @@ function window_ui.create_window(inital_playtime, opts)
 end
 
 -- updates the playtime counter of the provided window id if valid.
--- NOTE: if project_data is not valid or nil throws an error
+-- NOTE: if playtime_data is not valid or nil throws an error
 -- also if win_id is invalid it internally calls playtime.window_ui.create_window()
-function window_ui.update_window_timer(win_data, project_data, win_opts)
+function window_ui.update_window_timer(win_data, playtime_data, win_opts)
     -- handle invalid window_data
     if not window_ui.window_data_is_valid(win_data) then
-        window_ui.handle_invalid_window_data(win_data, project_data.playtime, win_opts)
+        window_ui.handle_invalid_window_data(
+            win_data,
+            playtime_data.projects[utils.cwd()],
+            win_opts
+        )
     end
-    if not project_data.playtime then
+
+    if not playtime_data.projects[utils.cwd()] then
         error(
-            "\nError occured while updating window counter\nError: win_id or project playtime invalid",
+            "\nError occured while updating window timer\nError: win_id or project playtime invalid",
             1
         )
     end
 
-    local updated_playtime = project_data.playtime + 1
-    project_data.playtime = updated_playtime
+    local updated_playtime = playtime_data.projects[utils.cwd()] + 1
+    playtime_data.projects[utils.cwd()] = updated_playtime
     local playtime_str = utils.format_time(updated_playtime)
 
     utils.set_buffer_content(win_data.buf_id, playtime_str)
 end
 
-function window_ui.handle_reposition_on_resize(win_id, updated_position)
-    if not win_id then
-        error("Invalid window id", 1)
+function window_ui.handle_reposition_on_resize(
+    win_data,
+    win_opts,
+    playtime_data,
+    updated_position
+)
+    -- handle invalid window_data
+    if not window_ui.window_data_is_valid(win_data) then
+        window_ui.handle_invalid_window_data(
+            win_data,
+            playtime_data.projects[utils.cwd()],
+            win_opts
+        )
     end
 
-    vim.api.nvim_win_set_config(win_id, {
+    vim.api.nvim_win_set_config(win_data.win_id, {
         relative = "editor",
         row = updated_position.row,
         col = updated_position.col,
