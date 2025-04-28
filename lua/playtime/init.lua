@@ -11,13 +11,14 @@ end
 function M.setup(opts)
     local playtime_group = vim.api.nvim_create_augroup("PLAYTIME_GROUP", { clear = true })
 
-    -- NOTE: Structure of the json file that will store playtime_user_data
-
+    -- IMPORTANT: Structure of the json file that will store playtime_user_data
+    -- Time is stored in seconds
     -- local playtime_data = {
-    --     { "/home/harsh/Desktop/jae-commerce/": "10:20:30" },
-    --     { "/home/harsh/Desktop/wallmart-excalidraw/": "3:20:30" },
+    --     projects = {
+    --             { "/home/harsh/Desktop/jae-commerce/"= 2340123 },
+    --             { "/home/harsh/Desktop/wallmart-excalidraw/"= 120 },
+    --     },
     -- }
-
     local playtime_data = data.get_playtime_data()
 
     -- window config options
