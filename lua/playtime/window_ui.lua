@@ -39,6 +39,7 @@ end
 
 -- Returns the the window id of created window and
 -- buffer id of created sratch buffer the window utilizes
+-- TODO: make window reponsive so when the timer goes to three digit its width increases
 function window_ui.create_window(inital_playtime, opts)
     -- creating the scratch buffer
     local buffer_id = vim.api.nvim_create_buf(false, true)
