@@ -20,12 +20,27 @@ Plug "harshk200/playtime.nvim"
 **Lazy.nvim:**
 ```lua
 return {
-	"harshk200/playtime.nvim",
+    "harshk200/playtime.nvim",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 	},
 	config = function()
-		require("playtime").setup() -- can provide opts here for window ui configuration listed in the section below
+		require("playtime").setup({
+			window = {
+				relative = "editor",
+				width = 8,
+				height = 1,
+				row = 0, -- row does defnies where to place on the y axis
+				col = vim.o.columns, -- column does defines where to place on the x axis
+				style = "minimal",
+				focusable = false,
+				noautocmd = true,
+				border = "rounded",
+				anchor = "NW",
+				zindex = 150,
+			},
+			win_visible_on_startup = true, -- the window is visible on startup by default
+		})
 	end,
 }
 ```
@@ -36,7 +51,7 @@ return {
 
 **You can remap the above if you like**
 ```lua
-vim.keymap.set("n", "<leader>pt", ":PlaytimeToggle")
+vim.keymap.set("n", "<leader>pt", ":PlaytimeToggle<CR>")
 ```
 
 ## Configuration
@@ -44,17 +59,19 @@ Default config options for window
 ```lua
     -- window config options (they are for the vim.api.nvim_open_win() so you can provide anything you want for your styling)
     local default_opts = {
-        relative = "editor",
-        width = 8,
-        height = 1,
-        row = 0,                -- row does defnies where to place on the y axis
-        col = vim.o.columns,    -- column does defines where to place on the x axis
-        style = "minimal",
-        focusable = false,
-        noautocmd = true,
-        border = "rounded",
-        anchor = "NW",
-        zindex = 150,
+        window = {
+            relative = "editor",
+            width = 8,
+            height = 1,
+            row = 0, -- row does defnies where to place on the y axis
+            col = vim.o.columns, -- column does defines where to place on the x axis
+            style = "minimal",
+            focusable = false,
+            noautocmd = true,
+            border = "rounded",
+            anchor = "NW",
+            zindex = 150,
+        },
         win_visible_on_startup = true, -- the window is visible on startup by default
     }
 ```

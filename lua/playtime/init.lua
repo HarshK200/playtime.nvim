@@ -19,29 +19,32 @@ function M.setup(opts)
     -- NOTE: this is a refrence to the playtime_data_cache
     local playtime_data = data.get_playtime_data()
 
-    -- window config options
+    -- default config for Playtime plugin
     local default_opts = {
-        relative = "editor",
-        width = 8,
-        height = 1,
-        row = 0,
-        col = vim.o.columns,
-        style = "minimal",
-        focusable = false,
-        noautocmd = true,
-        border = "rounded",
-        anchor = "NW", -- which cornor to play at row, col
-        zindex = 150,
+        window = {
+            relative = "editor",
+            width = 8,
+            height = 1,
+            row = 0,
+            col = vim.o.columns,
+            style = "minimal",
+            focusable = false,
+            noautocmd = true,
+            border = "rounded",
+            anchor = "NW", -- which cornor to play at row, col
+            zindex = 150,
+        },
         win_visible_on_startup = true, -- should the window be visible by default
     }
-    local window_opts = opts and opts or default_opts
-    local win_data = window_ui.create_window(playtime_data.projects[utils.cwd()], window_opts)
-    win_data.win_is_visible = window_opts.win_visible_on_startup
+    local config_opts = opts and opts or default_opts
+    local win_data =
+        window_ui.create_window(playtime_data.projects[utils.cwd()], config_opts)
+    win_data.win_is_visible = config_opts.win_visible_on_startup
 
     -- Update clock every second and draws the window if it doesn't exit
     vim.fn.timer_start(1000, function()
         vim.schedule(function()
-            window_ui.update_window_timer(win_data, playtime_data, window_opts)
+            window_ui.update_window_timer(win_data, playtime_data, config_opts.window)
         end)
     end, { ["repeat"] = -1 })
 
@@ -58,9 +61,9 @@ function M.setup(opts)
         callback = function()
             window_ui.handle_reposition_on_resize(
                 win_data,
-                window_opts,
+                config_opts.window,
                 playtime_data,
-                { row = window_opts.row, col = window_opts.col }
+                { row = config_opts.window.row, col = config_opts.window.col }
             )
         end,
         group = playtime_group,
@@ -77,7 +80,7 @@ function M.setup(opts)
             window_ui.handle_invalid_window_data(
                 win_data,
                 playtime_data.projects[utils.cwd()],
-                window_opts
+                config_opts.window
             )
         end
     end, {})

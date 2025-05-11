@@ -39,7 +39,8 @@ function window_ui.handle_invalid_window_data(win_data, playtime, win_opts)
 
     -- if buffer is invalid then create new buffer and update the win_data table
     if not vim.api.nvim_buf_is_valid(win_data.buf_id) then
-        win_data.buf_id = vim.api.nvim_create_buf(false, true)
+        local buffer_id = vim.api.nvim_create_buf(false, true)
+        win_data.buf_id = buffer_id
     end
 end
 
@@ -50,15 +51,25 @@ function window_ui.create_window(inital_playtime, opts)
     -- creating the scratch buffer
     local buffer_id = vim.api.nvim_create_buf(false, true)
 
-    -- creating the window
-    local window_id = vim.api.nvim_open_win(buffer_id, false, opts)
-    -- for tranparency
-    vim.api.nvim_set_option_value("winblend", 70, { win = window_id })
+    -- only create the window if specified by the user
+    local window_id = -1
+    if opts.win_is_visible then
+        -- creating the window
+        window_id = vim.api.nvim_open_win(buffer_id, false, opts.window)
+        -- for tranparency
+        vim.api.nvim_set_option_value("winblend", 70, { win = window_id })
+    end
 
     local playtime_str = utils.format_time(inital_playtime)
     utils.set_buffer_content(buffer_id, playtime_str)
+    -- NOTE: the below option is set so we dont' get buffer modified warning
+    vim.bo[buffer_id].modified = false
 
-    return { win_id = window_id, buf_id = buffer_id }
+    return {
+        win_id = window_id,
+        buf_id = buffer_id,
+        win_is_visible = opts.win_is_visible,
+    }
 end
 
 -- updates the playtime counter of the provided window id if valid.
@@ -87,6 +98,8 @@ function window_ui.update_window_timer(win_data, playtime_data, win_opts)
     local playtime_str = utils.format_time(updated_playtime)
 
     utils.set_buffer_content(win_data.buf_id, playtime_str)
+    -- NOTE: the below option is set so we dont' get buffer modified warning
+    vim.bo[win_data.buf_id].modified = false
 end
 
 function window_ui.handle_reposition_on_resize(
