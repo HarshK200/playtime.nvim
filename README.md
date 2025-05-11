@@ -7,7 +7,7 @@
 
 **It shows the time you've spent on the current project ever since you first open the current project. The time is presisted between session just so you can flex harder 💪**
 
-## Installation
+## INSTALLATION
 
 NOTE: this requires `nvim-lua/plenary.nvim` so plug users have that installed
 
@@ -30,6 +30,15 @@ return {
 }
 ```
 
+## USAGE
+**You can call `:PlaytimeToggle` vim command to hide/show the timer window**
+**NOTE: even if the window is hidden the timer doesn't stop, it continues to run in the background**
+
+**You can remap the above if you like**
+```lua
+vim.keymap.set("n", "<leader>pt", ":PlaytimeToggle")
+```
+
 ## Configuration
 Default config options for window
 ```lua
@@ -46,5 +55,6 @@ Default config options for window
         border = "rounded",
         anchor = "NW",
         zindex = 150,
+        win_visible_on_startup = true, -- the window is visible on startup by default
     }
 ```
