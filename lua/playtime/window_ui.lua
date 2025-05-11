@@ -75,6 +75,11 @@ end
 -- updates the playtime counter of the provided window id if valid.
 -- NOTE: if playtime_data is not valid or nil throws an error
 -- also if win_id is invalid it internally calls playtime.window_ui.create_window()
+
+-- FIX: we don't really care about the window or buffer if the window is hidden
+-- since(both the win & buf will be invalid) so just check if win_is_visible and if is 
+-- then only validate buf, win & update the buffer
+-- else just update the playtime.projects[utils.cwd()] = update_playtime
 function window_ui.update_window_timer(win_data, playtime_data, win_opts)
     -- if buffer ever goes invalid then it calls handle_invalid_window_data()
     if not window_ui.window_data_is_valid(win_data) then

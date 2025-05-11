@@ -71,6 +71,8 @@ function M.setup(opts)
 
     ------------------- USER COMMANDS -------------------
     vim.api.nvim_create_user_command("PlaytimeToggle", function(args)
+        -- FIX: no need to retain the buffer when deleting the window also delete the buffer
+        -- as well
         if win_data.win_is_visible then
             vim.api.nvim_win_hide(win_data.win_id)
             win_data.win_id = -1
