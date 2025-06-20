@@ -37,8 +37,10 @@ function M.setup(opts)
         win_visible_on_startup = true, -- should the window be visible by default
     }
     local config_opts = opts and opts or default_opts
-    local win_data =
-        window_ui.create_window(playtime_data.projects[utils.cwd()], config_opts)
+    local win_data = window_ui.create_window_with_new_buffer(
+        playtime_data.projects[utils.cwd()],
+        config_opts
+    )
     win_data.win_is_visible = config_opts.win_visible_on_startup
 
     -- Update clock every second and draws the window if it doesn't exit
@@ -69,14 +71,27 @@ function M.setup(opts)
         group = playtime_group,
     })
 
+    vim.api.nvim_create_autocmd("TabEnter", {
+        callback = function()
+            local was_window_open = win_data.win_is_visible
+
+            -- only open window if it was previously open (close it only old tabs as well)
+            if was_window_open then
+                window_ui.close_window(win_data)
+
+                win_data.win_id =
+                    window_ui.create_window_with_existing_buffer(win_data, config_opts)
+            end
+        end,
+        group = playtime_group,
+    })
+
     ------------------- USER COMMANDS -------------------
     vim.api.nvim_create_user_command("PlaytimeToggle", function(args)
         -- FIX: no need to retain the buffer when deleting the window also delete the buffer
         -- as well
         if win_data.win_is_visible then
-            vim.api.nvim_win_hide(win_data.win_id)
-            win_data.win_id = -1
-            win_data.win_is_visible = false
+            window_ui.close_window(win_data)
         else
             win_data.win_is_visible = true
             window_ui.handle_invalid_window_data(

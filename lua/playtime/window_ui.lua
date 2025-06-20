@@ -24,8 +24,11 @@ end
 function window_ui.handle_invalid_window_data(win_data, playtime, win_opts)
     if win_data.win_is_visible and not vim.api.nvim_win_is_valid(win_data.win_id) then
         -- if both window and buffer are invalid
-        if not vim.api.nvim_buf_is_valid(win_data.buf_id) then
-            win_data = window_ui.create_window(playtime, win_opts)
+        if
+            not vim.api.nvim_buf_is_valid(win_data.buf_id)
+            and vim.api.nvim_win_is_valid(win_data.win_id)
+        then
+            win_data = window_ui.create_window_with_new_buffer(playtime, win_opts)
         else
             -- if the window is invalid but buffer is valid
             win_data.win_id = vim.api.nvim_open_win(win_data.buf_id, false, win_opts)
@@ -45,15 +48,16 @@ function window_ui.handle_invalid_window_data(win_data, playtime, win_opts)
 end
 
 -- Returns the the window id of created window and
--- buffer id of created sratch buffer the window utilizes
+-- buffer id of newly created scratch buffer the window utilizes
+-- NOTE: this does not create a window if win_visible_on_startup is false
 -- TODO: make window reponsive so when the timer goes to three digit its width increases
-function window_ui.create_window(inital_playtime, opts)
+function window_ui.create_window_with_new_buffer(inital_playtime, opts)
     -- creating the scratch buffer
     local buffer_id = vim.api.nvim_create_buf(false, true)
 
     -- only create the window if specified by the user
     local window_id = -1
-    if opts.win_is_visible then
+    if opts.win_visible_on_startup then
         -- creating the window
         window_id = vim.api.nvim_open_win(buffer_id, false, opts.window)
         -- for tranparency
@@ -68,18 +72,41 @@ function window_ui.create_window(inital_playtime, opts)
     return {
         win_id = window_id,
         buf_id = buffer_id,
-        win_is_visible = opts.win_is_visible,
+        win_is_visible = opts.win_visible_on_startup,
     }
+end
+
+-- creates a new window with the already existing buffer_id on the win_data passed in
+-- returns the id of the newly created window
+function window_ui.create_window_with_existing_buffer(win_data, opts)
+    if not vim.api.nvim_buf_is_valid(win_data.buf_id) then
+        error("\nError creating new window with existing buffer: Invalid buffer id", 1)
+        return
+    end
+
+    -- creating the window
+    local window_id = vim.api.nvim_open_win(win_data.buf_id, false, opts.window)
+    -- for tranparency
+    vim.api.nvim_set_option_value("winblend", 70, { win = window_id })
+    win_data.win_is_visible = true
+
+    return window_id
+end
+
+-- closes the window with the provided window id in the win_data
+-- NOTE: if the win_id is invalid does nothing
+function window_ui.close_window(win_data)
+    if vim.api.nvim_win_is_valid(win_data.win_id) then
+        vim.api.nvim_win_close(win_data.win_id, true)
+        win_data.win_id = -1
+        win_data.win_is_visible = false
+    end
 end
 
 -- updates the playtime counter of the provided window id if valid.
 -- NOTE: if playtime_data is not valid or nil throws an error
 -- also if win_id is invalid it internally calls playtime.window_ui.create_window()
 
--- FIX: we don't really care about the window or buffer if the window is hidden
--- since(both the win & buf will be invalid) so just check if win_is_visible and if is 
--- then only validate buf, win & update the buffer
--- else just update the playtime.projects[utils.cwd()] = update_playtime
 function window_ui.update_window_timer(win_data, playtime_data, win_opts)
     -- if buffer ever goes invalid then it calls handle_invalid_window_data()
     if not window_ui.window_data_is_valid(win_data) then
@@ -95,6 +122,7 @@ function window_ui.update_window_timer(win_data, playtime_data, win_opts)
             "\nError occured while updating window timer\nError: win_id or project playtime invalid",
             1
         )
+        return
     end
 
     -- updating the buffer timer & our local state variable as well
